@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DonorController;
+use App\Http\Controllers\ReceiverController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,4 +19,10 @@ Route::prefix('donor')->group(function () {
     Route::get('/requests', [DonorController::class, 'requests'])->name('donor.requests.index');
     Route::patch('/requests/{claim}/approve', [DonorController::class, 'approve'])->name('donor.requests.approve');
     Route::patch('/requests/{claim}/reject', [DonorController::class, 'reject'])->name('donor.requests.reject');
+});
+
+Route::prefix('receiver')->group(function () {
+    Route::get('/dashboard', [ReceiverController::class, 'index'])->name('receiver.dashboard');
+    Route::get('/food/{foodItem}', [ReceiverController::class, 'show'])->name('receiver.food.show');
+    Route::get('/profile', [ReceiverController::class, 'profile'])->name('receiver.profile');
 });

@@ -31,6 +31,11 @@ class FoodItem extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function user() //sementara
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function claims()
     {
         return $this->hasMany(Claim::class);
