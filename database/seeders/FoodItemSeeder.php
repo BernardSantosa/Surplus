@@ -33,7 +33,7 @@ class FoodItemSeeder extends Seeder
                 'Beef Rendang', 'Grilled Chicken Breast', 'Fish Fillet Meal'
             ],
             'Fruits' => [
-                'Fresh Apples Pack', 'Bananas (6 pcs)', 'Fruit Salad Cup'
+                'Fresh Apples Pack', 'Bananas', 'Fruit Salad Cup'
             ],
             'Vegetables' => [
                 'Mixed Salad Bowl', 'Fresh Lettuce Head', 'Vegetable Stir Fry'
@@ -58,14 +58,17 @@ class FoodItemSeeder extends Seeder
             ],
         ];
 
+       $index = 1;
+
         foreach ($foodList as $category => $foods) {
             foreach ($foods as $food) {
+
                 DB::table('food_items')->insert([
                     'user_id' => $faker->randomElement($users),
                     'category_id' => $categoryMap[$category],
                     'name' => $food,
                     'description' => $faker->sentence(10),
-                    'photo' => null,
+                    'photo' => "images/sample-$index.jpg",
                     'quantity' => rand(1, 10),
                     'pickup_location' => $faker->address(),
                     'expires_at' => $faker->dateTimeBetween('now', '+6 days'),
@@ -73,6 +76,8 @@ class FoodItemSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
+                $index++; // naikkan setiap food diinsert
             }
         }
     }

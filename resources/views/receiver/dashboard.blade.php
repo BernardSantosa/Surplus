@@ -48,7 +48,7 @@
     <div class="col-md-4 mb-4">
         <div class="card h-100 shadow-sm border-0 hover-shadow">
             @if($food->photo)
-                <img src="{{ asset('storage/' . $food->photo) }}" class="card-img-top" alt="{{ $food->name }}">
+                <img src="{{ asset($food->photo) }}" class="card-img-top" alt="{{ $food->name }}">
             @else
                 <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted">
                     <span>Tidak ada foto</span>
