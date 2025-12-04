@@ -20,6 +20,9 @@
         <li class="nav-item">
             <a class="nav-link" href="{{ route('donor.requests.index') }}">Permintaan Masuk</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('donor.profile') }}">Profile</a>
+        </li>
     </nav>
 
     <div class="container">
