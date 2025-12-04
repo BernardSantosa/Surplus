@@ -9,6 +9,7 @@ use App\Models\Claim;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class DonorController extends Controller
 {
@@ -17,14 +18,36 @@ class DonorController extends Controller
         // $userId = Auth::id();
         $userId = 1;
         $user = User::find($userId);
-        $totalDonated = FoodItem::where('user_id', $userId)->count();
-        $activeItems = FoodItem::where('user_id', $userId)->where('status', 'available')->count();
+
+        $totalDonated = FoodItem::where('user_id', $userId)->where('status', 'claimed')->count();
         $totalClaims = Claim::whereHas('fooditems', function($q) use ($userId) {
             $q->where('user_id', $userId);
-        })->count();
-        $foodItems = FoodItem::where('user_id', $userId)->latest()->get();
+        })->where('status', 'pending')->count();
 
-        return view('donor.dashboard', compact('user', 'totalDonated', 'activeItems', 'totalClaims', 'foodItems'));
+        // --- PEMISAHAN DATA UNTUK TABS ---
+        
+        // 1. Tab Aktif: Hanya yang available (Boleh Edit/Delete)
+        $activeItems = FoodItem::where('user_id', $userId)
+                        ->where('status', 'available')
+                        ->latest()
+                        ->get();
+
+        // 2. Tab Proses: Sedang diklaim orang (Hanya boleh Cancel)
+        $ongoingItems = FoodItem::where('user_id', $userId)
+                        ->where('status', 'claimed')
+                        ->latest()
+                        ->get();
+
+        // 3. Tab Riwayat: Selesai, Expired, atau Dibatalkan (Read Only)
+        $historyItems = FoodItem::where('user_id', $userId)
+                        ->whereIn('status', ['completed', 'expired', 'cancelled'])
+                        ->latest()
+                        ->get();
+
+        return view('donor.dashboard', compact(
+            'user', 'totalDonated', 'totalClaims', 
+            'activeItems', 'ongoingItems', 'historyItems'
+        ));
     }
 
     public function create()
@@ -70,6 +93,11 @@ class DonorController extends Controller
 
     public function edit(FoodItem $foodItem)
     {
+        if ($foodItem->status !== 'available') {
+            return redirect()->route('donor.dashboard')
+                ->with('error', 'Item yang sedang diklaim atau selesai tidak bisa diedit.');
+        }
+
         if ($foodItem->user_id !== 1) { # Auth::id()
             abort(403);
         }
@@ -80,6 +108,7 @@ class DonorController extends Controller
 
     public function update(Request $request, FoodItem $foodItem)
     {
+        if ($foodItem->status !== 'available') abort(403, 'Item tidak bisa diedit saat status: ' . $foodItem->status);
         if ($foodItem->user_id !== 1) abort(403); # Auth::id()
 
         $validated = $request->validate([
@@ -107,6 +136,9 @@ class DonorController extends Controller
 
     public function destroy(FoodItem $foodItem)
     {
+        if ($foodItem->status !== 'available') {
+            return back()->with('error', 'Item sedang dalam proses klaim atau sudah selesai, tidak bisa dihapus.');
+        }
         if ($foodItem->user_id !== 1) abort(403); # Auth::id()
 
         if ($foodItem->photo) {
@@ -116,6 +148,23 @@ class DonorController extends Controller
         $foodItem->delete();
 
         return redirect()->route('donor.dashboard')->with('success', 'Item berhasil dihapus.');
+    }
+
+    public function cancel(Request $request, FoodItem $foodItem)
+    {
+        if ($foodItem->user_id !== (Auth::id() ?? 1)) abort(403);
+
+        // Hanya boleh cancel jika statusnya 'claimed' (sedang jalan)
+        if ($foodItem->status === 'claimed') {
+            $foodItem->update(['status' => 'cancelled']);
+            
+            // Opsional: Jika mau lebih canggih, disini kita bisa reject semua Claim terkait
+            Claim::where('food_id', $foodItem->id)->update(['status' => 'rejected']);
+
+            return back()->with('success', 'Donasi berhasil dibatalkan.');
+        }
+
+        return back()->with('error', 'Status item tidak valid untuk pembatalan.');
     }
 
     public function requests()
@@ -149,5 +198,47 @@ class DonorController extends Controller
         $claim->update(['status' => 'rejected']);
 
         return back()->with('success', 'Permintaan ditolak.');
+    }
+
+    public function profile()
+    {
+        $userId = 1; # Auth::id() 
+        $user = User::findOrFail($userId);
+
+        // Statistik
+        $totalDonations = FoodItem::where('user_id', $userId)->count();
+        $activeDonations = FoodItem::where('user_id', $userId)->where('status', 'available')->count();
+        $completedDonations = FoodItem::where('user_id', $userId)->where('status', 'claimed')->count();
+        $recentDonations = FoodItem::where('user_id', $userId)->latest()->limit(5)->get();
+
+        return view('donor.profile', compact(
+            'user', 'totalDonations', 'activeDonations', 'completedDonations', 'recentDonations'
+        ));
+    }
+
+    public function editProfile()
+    {
+        $userId = 1; # Auth::id();
+        $user = User::findOrFail($userId);
+        
+        return view('donor.profile-edit', compact('user'));
+    }
+
+    // Proses Update ke Database
+    public function updateProfile(Request $request)
+    {
+        $userId = 1; # Auth::id();
+        $user = User::findOrFail($userId);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'phone' => 'nullable|string|max:25',
+            'address' => 'nullable|string|max:100',
+        ]);
+
+        $user->update($validated);
+
+        return redirect()->route('donor.profile')->with('success', 'Profil berhasil diperbarui!');
     }
 }

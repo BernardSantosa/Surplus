@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedInteger('quantity');
             $table->text('pickup_location');
             $table->date('expires_at');
-            $table->enum('status', ['available', 'claimed', 'expired'])->default('available');;
+            $table->enum('status', ['available', 'claimed', 'expired', 'cancelled', 'completed'])->default('available');;
             $table->timestamps();
         });
     }

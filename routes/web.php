@@ -16,9 +16,13 @@ Route::prefix('donor')->group(function () {
     Route::get('/food/{foodItem}/edit', [DonorController::class, 'edit'])->name('donor.food.edit');
     Route::put('/food/{foodItem}', [DonorController::class, 'update'])->name('donor.food.update');
     Route::delete('/food/{foodItem}', [DonorController::class, 'destroy'])->name('donor.food.destroy');
+    Route::patch('/food/{foodItem}/cancel', [DonorController::class, 'cancel'])->name('donor.food.cancel');
     Route::get('/requests', [DonorController::class, 'requests'])->name('donor.requests.index');
     Route::patch('/requests/{claim}/approve', [DonorController::class, 'approve'])->name('donor.requests.approve');
     Route::patch('/requests/{claim}/reject', [DonorController::class, 'reject'])->name('donor.requests.reject');
+    Route::get('/donor/profile', [DonorController::class, 'profile'])->name('donor.profile');
+    Route::get('/profile/edit', [DonorController::class, 'editProfile'])->name('donor.profile.edit');
+    Route::put('/profile', [DonorController::class, 'updateProfile'])->name('donor.profile.update');
 });
 
 Route::prefix('receiver')->group(function () {
