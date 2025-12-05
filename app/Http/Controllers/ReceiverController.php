@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Claim;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ReceiverController extends Controller
 { 
@@ -52,24 +53,67 @@ class ReceiverController extends Controller
 
     public function profile()
     {
-        // Hardcoded User for dev (just like your DonorController)
-        // $userId = Auth::id();
-        $userId = 2; // Assuming ID 2 is a receiver for testing
-        
-        $user = User::find($userId);
+        // 1. Get the actual logged-in user
+        $user = Auth::user(); 
+        $userId = $user->id;
 
-        // Stats
-        $totalClaims = Claim::where('user_id', $userId)->count();
-        $pendingClaims = Claim::where('user_id', $userId)->where('status', 'pending')->count();
-        $approvedClaims = Claim::where('user_id', $userId)->where('status', 'approved')->count();
+        // 2. Fix the column name: Change 'user_id' to 'receiver_id'
+        $totalClaims = Claim::where('receiver_id', $userId)->count();
+        $pendingClaims = Claim::where('receiver_id', $userId)->where('status', 'pending')->count();
+        $approvedClaims = Claim::where('receiver_id', $userId)->where('status', 'approved')->count();
 
-        // History Data (Get claims with Food details)
-        // Note: 'fooditems' must match the relationship name in your Claim model
+        // 3. Fix the relationship query as well
         $claimsHistory = Claim::with('fooditems') 
-                         ->where('user_id', $userId)
+                         ->where('receiver_id', $userId) // <--- Changed here too
                          ->latest()
                          ->get();
 
         return view('receiver.profile', compact('user', 'totalClaims', 'pendingClaims', 'approvedClaims', 'claimsHistory'));
+    }
+
+    public function editProfile()
+    {
+        $user = Auth::user();
+        return view('receiver.profile-edit', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'phone' => 'nullable|string|max:25',
+            'address' => 'nullable|string|max:100',
+        ]);
+
+        $user->update($validated);
+
+        return redirect()->route('receiver.profile')->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    public function storeClaim(Request $request, FoodItem $foodItem)
+    {
+        if ($foodItem->user_id === \Illuminate\Support\Facades\Auth::id()) {
+            return back()->with('error', 'Anda tidak bisa mengklaim makanan Anda sendiri.');
+        }
+
+        $existing = \App\Models\Claim::where('food_id', $foodItem->id)
+                         ->where('receiver_id', \Illuminate\Support\Facades\Auth::id())
+                         ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Anda sudah mengajukan klaim untuk makanan ini sebelumnya.');
+        }
+
+        \App\Models\Claim::create([
+            'food_id' => $foodItem->id,
+            'receiver_id' => \Illuminate\Support\Facades\Auth::id(),
+            'status' => 'pending',
+            'message' => 'Saya ingin mengklaim makanan ini.',
+        ]);
+
+        return redirect()->route('receiver.profile')->with('success', 'Permintaan berhasil dikirim! Mohon tunggu konfirmasi donatur.');
     }
 }

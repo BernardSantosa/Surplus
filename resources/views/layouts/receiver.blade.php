@@ -31,6 +31,12 @@
                         <a class="nav-link {{ request()->routeIs('receiver.profile') ? 'active' : '' }}" 
                            href="{{ route('receiver.profile') }}">Profil & Riwayat</a>
                     </li>
+                    <li class="nav-item">
+                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="nav-link btn btn-link" style="text-decoration: none;">Logout</button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

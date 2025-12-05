@@ -15,11 +15,10 @@ class DonorController extends Controller
 {
     public function index()
     {
-        // $userId = Auth::id();
-        $userId = 1;
-        $user = User::find($userId);
+        $user = Auth::user();
+        $userId = $user->id;
 
-        $totalDonated = FoodItem::where('user_id', $userId)->where('status', 'claimed')->count();
+        $totalDonated = FoodItem::where('user_id', $userId)->count();
         $totalClaims = Claim::whereHas('fooditems', function($q) use ($userId) {
             $q->where('user_id', $userId);
         })->where('status', 'pending')->count();
@@ -52,8 +51,7 @@ class DonorController extends Controller
 
     public function create()
     {
-        $userId = 1;
-        $user = User::find($userId);
+        $user = Auth::user();
         $categories = Category::all();
         return view('donor.food.create', compact('user', 'categories'));
     }
@@ -77,7 +75,7 @@ class DonorController extends Controller
         }
 
         FoodItem::create([
-            'user_id' => 1, # Auth::id()
+            'user_id' => Auth::id(), // FIX: Uses logged-in user
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
             'description' => $validated['description'],
@@ -98,7 +96,7 @@ class DonorController extends Controller
                 ->with('error', 'Item yang sedang diklaim atau selesai tidak bisa diedit.');
         }
 
-        if ($foodItem->user_id !== 1) { # Auth::id()
+        if ($foodItem->user_id !== Auth::id()) { // FIX: Uses logged-in user
             abort(403);
         }
 
@@ -109,7 +107,8 @@ class DonorController extends Controller
     public function update(Request $request, FoodItem $foodItem)
     {
         if ($foodItem->status !== 'available') abort(403, 'Item tidak bisa diedit saat status: ' . $foodItem->status);
-        if ($foodItem->user_id !== 1) abort(403); # Auth::id()
+        
+        if ($foodItem->user_id !== Auth::id()) abort(403); // FIX: Uses logged-in user
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -139,7 +138,8 @@ class DonorController extends Controller
         if ($foodItem->status !== 'available') {
             return back()->with('error', 'Item sedang dalam proses klaim atau sudah selesai, tidak bisa dihapus.');
         }
-        if ($foodItem->user_id !== 1) abort(403); # Auth::id()
+        
+        if ($foodItem->user_id !== Auth::id()) abort(403); // FIX: Uses logged-in user
 
         if ($foodItem->photo) {
             Storage::disk('public')->delete($foodItem->photo);
@@ -152,7 +152,7 @@ class DonorController extends Controller
 
     public function cancel(Request $request, FoodItem $foodItem)
     {
-        if ($foodItem->user_id !== (Auth::id() ?? 1)) abort(403);
+        if ($foodItem->user_id !== Auth::id()) abort(403); // FIX: Uses logged-in user
 
         // Hanya boleh cancel jika statusnya 'claimed' (sedang jalan)
         if ($foodItem->status === 'claimed') {
@@ -170,7 +170,7 @@ class DonorController extends Controller
     public function requests()
     {
         $claims = Claim::whereHas('fooditems', function($query) {
-            $query->where('user_id', 1); # Auth::id()
+            $query->where('user_id', Auth::id()); // FIX: Uses logged-in user
         })->where('status', 'pending') 
         ->with(['fooditems', 'receiver']) 
         ->latest()
@@ -181,7 +181,8 @@ class DonorController extends Controller
 
     public function approve(Claim $claim)
     {
-        if ($claim->fooditems->user_id !== 1) abort(403); # Auth::id()
+        // Ensure the food item belongs to the logged-in user
+        if ($claim->fooditems->user_id !== Auth::id()) abort(403); 
 
         $claim->update(['status' => 'approved']);
 
@@ -193,7 +194,8 @@ class DonorController extends Controller
 
     public function reject(Claim $claim)
     {
-        if ($claim->fooditems->user_id !== 1) abort(403); # Auth::id()
+        // Ensure the food item belongs to the logged-in user
+        if ($claim->fooditems->user_id !== Auth::id()) abort(403); 
 
         $claim->update(['status' => 'rejected']);
 
@@ -202,7 +204,7 @@ class DonorController extends Controller
 
     public function profile()
     {
-        $userId = 1; # Auth::id() 
+        $userId = Auth::id(); // FIX: Uses logged-in user
         $user = User::findOrFail($userId);
 
         // Statistik
@@ -218,17 +220,14 @@ class DonorController extends Controller
 
     public function editProfile()
     {
-        $userId = 1; # Auth::id();
-        $user = User::findOrFail($userId);
-        
+        $user = Auth::user(); // FIX: Uses logged-in user
         return view('donor.profile-edit', compact('user'));
     }
 
     // Proses Update ke Database
     public function updateProfile(Request $request)
     {
-        $userId = 1; # Auth::id();
-        $user = User::findOrFail($userId);
+        $user = Auth::user(); // FIX: Uses logged-in user
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
