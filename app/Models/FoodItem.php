@@ -28,16 +28,11 @@ class FoodItem extends Model
 
     public function users()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function user() //sementara
-    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
     public function claims()
     {
-        return $this->hasMany(Claim::class);
+        return $this->hasMany(Claim::class, 'food_id');
     }
 }

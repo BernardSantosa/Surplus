@@ -14,7 +14,7 @@ class ReceiverController extends Controller
 { 
     public function index(Request $request)
     {
-        $query = FoodItem::with(['user', 'category']) 
+        $query = FoodItem::with(['users', 'category']) 
                  ->where('status', 'available'); 
 
         if ($request->filled('search')) {
@@ -46,27 +46,59 @@ class ReceiverController extends Controller
             abort(404, 'Maaf, makanan ini sudah tidak tersedia.');
         }
 
-        $foodItem->load('user');
+        $foodItem->load('users');
 
         return view('receiver.food.show', compact('foodItem'));
     }
 
+    // public function editProfile()
+    // {
+    //     $userId = Auth::id() ?? 2;
+    //     $user = User::find($userId);
+
+    //     // Pastikan ini 'receiver.profile-edit' (pakai strip, bukan titik)
+    //     return view('receiver.profile-edit', compact('user'));
+    // }
+
+    // public function updateProfile(Request $request)
+    // {
+    //     $userId = Auth::id() ?? 2;
+    //     $user = User::find($userId);
+
+    //     // 1. Validasi Input
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+    //         'phone' => 'nullable|string|max:15',
+    //         'address' => 'nullable|string',
+    //     ]);
+
+    //     // 2. Update Data
+    //     $user->update([
+    //         'name' => $validated['name'],
+    //         'email' => $validated['email'],
+    //         'phone' => $validated['phone'],
+    //         'address' => $validated['address'],
+    //     ]);
+
+    //     return redirect()->route('receiver.profile')->with('success', 'Profil berhasil diperbarui!');
+    // }
+
+
     public function profile()
     {
-        // 1. Get the actual logged-in user
-        $user = Auth::user(); 
-        $userId = $user->id;
+        // $userId = Auth::id();
+        $userId = Auth::id() ?? 2;
+        $user = User::find($userId);
 
-        // 2. Fix the column name: Change 'user_id' to 'receiver_id'
         $totalClaims = Claim::where('receiver_id', $userId)->count();
         $pendingClaims = Claim::where('receiver_id', $userId)->where('status', 'pending')->count();
         $approvedClaims = Claim::where('receiver_id', $userId)->where('status', 'approved')->count();
 
-        // 3. Fix the relationship query as well
         $claimsHistory = Claim::with('fooditems') 
-                         ->where('receiver_id', $userId) // <--- Changed here too
-                         ->latest()
-                         ->get();
+                            ->where('receiver_id', $userId)
+                            ->latest()
+                            ->get();
 
         return view('receiver.profile', compact('user', 'totalClaims', 'pendingClaims', 'approvedClaims', 'claimsHistory'));
     }
