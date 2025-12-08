@@ -13,36 +13,125 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+     <nav class="navbar navbar-expand-lg navbar-dark bg-success py-3 shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ route('receiver.dashboard') }}">Surplus Receiver</a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            {{-- LOGO --}}
+            <a class="navbar-brand fw-bold" href="{{ route('home') }}">
+                Surplus
+            </a>
+
+            {{-- Mobile Toggle --}}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse" id="navMenu">
                 <ul class="navbar-nav ms-auto">
+
+                    <!-- {{-- =============================
+                        UNIVERSAL LINKS (GUEST + AUTH)
+                    ============================== --}}
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('receiver.dashboard') ? 'active' : '' }}" 
-                           href="{{ route('receiver.dashboard') }}">Cari Makanan</a>
+                        <a class="nav-link {{ request()->routeIs('home') ? 'fw-bold text-white' : '' }}"
+                        href="{{ route('home') }}">
+                        Home
+                        </a>
+                    </li> -->
+
+                    
+                    
+                    {{-- =============================
+                        GUEST USER
+                        ============================== --}}
+                        @guest
+
+                        <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('home') ? 'fw-bold text-white' : '' }}"
+                        href="{{ route('home') }}">
+                        Home
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('how') ? 'fw-bold text-white' : '' }}"
+                        href="{{ route('how') }}">
+                        How It Works
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('receiver.profile') ? 'active' : '' }}" 
-                           href="{{ route('receiver.profile') }}">Profil & Riwayat</a>
+                            <a class="nav-link {{ request()->routeIs('about') ? 'fw-bold text-white' : '' }}"
+                            href="{{ route('about') }}">
+                            About Us
+                            </a>
+                        </li>
+        
+
+
+                        <li class="nav-item ms-3">
+                            <a class="btn btn-light text-success fw-bold px-3"
+                            href="{{ route('login') }}">
+                            Login
+                        </a>
                     </li>
-                    <li class="nav-item">
-                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="nav-link btn btn-link" style="text-decoration: none;">Logout</button>
-                        </form>
+                    @endguest
+                    
+                    
+                    {{-- =============================
+                        AUTHENTICATED USER
+                        ============================== --}}
+                        @auth
+                        
+                        {{-- Role-based Dashboard --}}
+                        @if(auth()->user()->role === 'donor')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('donor.dashboard') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        @elseif(auth()->user()->role === 'receiver')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('receiver.dashboard') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        @endif
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('how') ? 'fw-bold text-white' : '' }}"
+                            href="{{ route('how') }}">
+                            How It Works
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('about') ? 'fw-bold text-white' : '' }}"
+                            href="{{ route('about') }}">
+                            About Us
+                            </a>
+                        </li>
+        
+
+                        {{-- Logout --}}
+                        <li class="nav-item ms-3">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button class="btn btn-danger px-3">Logout</button>
+                            </form>
+                        </li>
+
+                    @endauth
+
+                    {{-- LANGUAGE SWITCH --}}
+                    <li class="nav-item ms-4 mt-1">
+                        <x-language-switch />
                     </li>
+
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+
+    <div class="container mt-5 pt-2">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
