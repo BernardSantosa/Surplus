@@ -59,54 +59,36 @@ class ReceiverController extends Controller
         return view('receiver.food.show', compact('foodItem'));
     }
 
-    // public function editProfile()
-    // {
-    //     $userId = Auth::id() ?? 2;
-    //     $user = User::find($userId);
+    
 
-    //     // Pastikan ini 'receiver.profile-edit' (pakai strip, bukan titik)
-    //     return view('receiver.profile-edit', compact('user'));
-    // }
-
-    // public function updateProfile(Request $request)
-    // {
-    //     $userId = Auth::id() ?? 2;
-    //     $user = User::find($userId);
-
-    //     // 1. Validasi Input
-    //     $validated = $request->validate([
-    //         'name' => 'required|string|max:255',
-    //         'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-    //         'phone' => 'nullable|string|max:15',
-    //         'address' => 'nullable|string',
-    //     ]);
-
-    //     // 2. Update Data
-    //     $user->update([
-    //         'name' => $validated['name'],
-    //         'email' => $validated['email'],
-    //         'phone' => $validated['phone'],
-    //         'address' => $validated['address'],
-    //     ]);
-
-    //     return redirect()->route('receiver.profile')->with('success', 'Profil berhasil diperbarui!');
-    // }
-
-
+    
     public function profile()
     {
-        // $userId = Auth::id();
         $userId = Auth::id();
         $user = User::find($userId);
 
-        $totalClaims = Claim::where('receiver_id', $userId)->count();
-        $pendingClaims = Claim::where('receiver_id', $userId)->where('status', 'pending')->count();
-        $approvedClaims = Claim::where('receiver_id', $userId)->where('status', 'approved')->count();
+        // 1. TOTAL REQUEST
+        // Logic: Count everything EXCEPT 'cancelled'
+        $totalClaims = Claim::where('receiver_id', $userId)
+                            ->where('status', '!=', 'cancelled')
+                            ->count();
 
+        // 2. (Pending)
+        // Logic: Only strictly 'pending'
+        $pendingClaims = Claim::where('receiver_id', $userId)
+                            ->where('status', 'pending')
+                            ->count(); 
+
+        // 3. BERHASIL
+        $approvedClaims = Claim::where('receiver_id', $userId)
+                            ->whereIn('status', ['approved', 'claimed', 'completed']) // Added 'completed'
+                            ->count();
+
+        // History List
         $claimsHistory = Claim::with(['fooditems.users']) 
-                        ->where('receiver_id', $userId)
-                        ->latest()
-                        ->get();
+                            ->where('receiver_id', $userId)
+                            ->latest()
+                            ->get();
 
         return view('receiver.profile', compact('user', 'totalClaims', 'pendingClaims', 'approvedClaims', 'claimsHistory'));
     }
@@ -165,5 +147,62 @@ class ReceiverController extends Controller
         ]);
 
         return redirect()->route('receiver.profile')->with('success', 'Permintaan berhasil dikirim! Mohon tunggu konfirmasi donatur.');
+    }
+
+    public function cancelClaim(Claim $claim)
+    {
+        // Pastikan yang cancel adalah pemilik claim
+        if ($claim->receiver_id != (Auth::id() ?? 2)) {
+            abort(403);
+        }
+
+        // Hanya boleh cancel jika status masih pending atau claimed (belum diambil/selesai)
+        if (in_array($claim->status, ['pending', 'claimed'])) {
+            
+            // 1. Ubah status claim jadi cancelled
+            $claim->update(['status' => 'cancelled']);
+
+            // 2. KEMBALIKAN STATUS MAKANAN JADI AVAILABLE (PENTING!)
+            // Agar bisa diambil orang lain lagi
+            if ($claim->fooditems) {
+                $claim->fooditems->update(['status' => 'available']);
+            }
+
+            return back()->with('success', 'Permintaan berhasil dibatalkan. Makanan kembali tersedia untuk umum.');
+        }
+
+        return back()->with('error', 'Tidak dapat membatalkan permintaan dengan status ini.');
+    }
+
+    public function history(Request $request)
+    {
+        $userId = Auth::id() ?? 2;
+
+        // Ambil parameter dari URL, default-nya urutkan berdasarkan tanggal terbaru (desc)
+        $sort = $request->get('sort', 'date'); 
+        $direction = $request->get('direction', 'desc');
+
+        $query = Claim::with(['fooditems.users'])
+                    ->where('receiver_id', $userId);
+
+        // --- LOGIC SORTING ---
+        if ($sort == 'food_name') {
+            // Sort berdasarkan Nama Makanan (Relasi)
+            $query->join('food_items', 'claims.food_id', '=', 'food_items.id')
+                ->orderBy('food_items.name', $direction)
+                ->select('claims.*'); // Penting: Ambil kolom claims saja agar ID tidak bentrok
+        } 
+        elseif ($sort == 'status') {
+            // Sort berdasarkan Status
+            $query->orderBy('status', $direction);
+        } 
+        else {
+            // Default: Tanggal Request
+            $query->orderBy('created_at', $direction);
+        }
+
+        $claimsHistory = $query->paginate(10)->withQueryString();
+
+        return view('receiver.history', compact('claimsHistory'));
     }
 }

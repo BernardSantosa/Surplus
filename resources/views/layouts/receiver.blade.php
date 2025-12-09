@@ -108,8 +108,19 @@
                             About Us
                             </a>
                         </li>
-        
-
+                        <!-- 55555 -->
+                        {{-- Extra Donor-only Links --}}
+                        @if(auth()->user()->role === 'receiver')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('receiver.profile') ? 'active' : '' }}" 
+                                href="{{ route('receiver.profile') }}">Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('receiver.history') ? 'active' : '' }}" 
+                                href="{{ route('receiver.history') }}">History</a>
+                            </li>
+                        @endif
+                        <!-- 55555 -->
                         {{-- Logout --}}
                         <li class="nav-item ms-3">
                             <form method="POST" action="{{ route('logout') }}">

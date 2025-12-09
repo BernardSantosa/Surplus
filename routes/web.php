@@ -69,10 +69,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [ReceiverController::class, 'index'])->name('receiver.dashboard');
         Route::get('/food/{foodItem}', [ReceiverController::class, 'show'])->name('receiver.food.show');
         Route::get('/profile', [ReceiverController::class, 'profile'])->name('receiver.profile');
-
         Route::get('/profile/edit', [ReceiverController::class, 'editProfile'])->name('receiver.profile-edit');
         Route::put('/profile', [ReceiverController::class, 'updateProfile'])->name('receiver.profile.update');
+        
         Route::post('/food/{foodItem}/claim', [ReceiverController::class, 'storeClaim'])->name('receiver.claim.store');
+        Route::get('/history', [ReceiverController::class, 'history'])->name('receiver.history');
+        Route::patch('/claim/{claim}/cancel', [ReceiverController::class, 'cancelClaim'])->name('receiver.claim.cancel');
     });
 
 });
