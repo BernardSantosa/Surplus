@@ -26,14 +26,14 @@
 
     /* Kalau Aktif: Warna Hijau & Jelas */
     .label-active {
-        color: #198754; 
+        color: #ffffffff; 
         opacity: 1;
         transform: scale(1.1); /* Sedikit membesar biar keren */
     }
 
     /* Kalau Tidak Aktif: Warna Abu & Samar */
     .label-inactive {
-        color: #adb5bd;
+        color: #198754;
         opacity: 0.5; /* Transparan biar gak ganggu mata */
     }
 
