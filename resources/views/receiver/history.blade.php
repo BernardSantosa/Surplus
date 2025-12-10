@@ -117,8 +117,17 @@
                         <td>
                             @if($claim->status == 'pending')
                                 <span class="badge bg-warning text-dark">Pending</span>
-                            @elseif($claim->status == 'approved' || $claim->status == 'claimed')
-                                <span class="badge bg-success">Berhasil</span>
+                            @elseif($claim->status == 'approved')
+                                <span class="badge bg-success">Disetujui</span>
+                                <div class="alert alert-primary py-1 px-2 mt-1 mb-0 text-center border-0">
+                                    <small class="d-block text-uppercase" style="font-size: 0.65rem;">Kode Pickup</small>
+                                    <span class="fs-5 fw-bold font-monospace">{{ $claim->verification_code }}</span>
+                                </div>
+                                <div class="text-muted small mt-1" style="font-size: 0.7rem;">
+                                    Tunjukkan ke donatur saat ambil.
+                                </div>
+                            @elseif($claim->status == 'completed')
+                                <span class="badge bg-success">Selesai</span>
                             @elseif($claim->status == 'cancelled')
                                 <span class="badge bg-secondary">Dibatalkan</span>
                             @else

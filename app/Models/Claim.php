@@ -15,6 +15,7 @@ class Claim extends Model
         'quantity',
         'status',
         'message',
+        'verification_code',
     ];
 
     

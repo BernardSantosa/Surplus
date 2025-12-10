@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class DonorController extends Controller
 {
@@ -41,6 +42,11 @@ class DonorController extends Controller
             $q->where('user_id', $userId);
         })->where('status', 'pending')->count();
 
+        // 4. BARU: Total Klaim Selesai (Transaksi Berhasil)
+        $totalClaimsCompleted = Claim::whereHas('fooditems', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })->where('status', 'completed')->count();
+
         // --- PEMISAHAN DATA UNTUK TABS ---
 
         // Pending Requests (Pindahan dari method requests)
@@ -66,15 +72,22 @@ class DonorController extends Controller
         $ongoingItems = $ongoingQuery->get();
 
         // 3. Tab Riwayat: Selesai, Expired, atau Dibatalkan (Read Only)
-        $historyItems = FoodItem::where('user_id', $userId)
-                        ->whereIn('status', ['completed', 'expired', 'cancelled'])
-                        ->latest()
-                        ->get();
+        $historyItemsQuery = FoodItem::where('user_id', $userId)
+                    ->whereIn('status', ['completed', 'expired', 'cancelled']);
+        $historyItems = $historyItemsQuery->get();
+
+        $historyClaimsQuery = Claim::whereHas('fooditems', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })
+        ->whereIn('status', ['completed', 'rejected', 'cancelled']) // Ambil yang sudah final
+        ->with(['fooditems', 'receiver']);
+        $historyClaims = $historyClaimsQuery->get();
 
         return view('donor.dashboard', compact(
             'user', 
-            'totalActive', 'totalCompleted', 'totalRequests', 
-            'pendingClaims', 'activeItems', 'ongoingItems', 'historyItems'
+            'totalActive', 'totalCompleted', 'totalRequests', 'totalClaimsCompleted',
+            'pendingClaims', 'activeItems', 'ongoingItems', 
+            'historyItems', 'historyClaims'
         ));
     }
 
@@ -246,12 +259,18 @@ class DonorController extends Controller
             return back()->with('error', 'Gagal menyetujui. Stok tersisa (' . $foodItem->quantity . ') tidak cukup untuk permintaan ini (' . $claim->quantity . ').');
         }
 
+        // Generate kode acak 4 karakter (misal: 4Z2Q)
+        $code = strtoupper(Str::random(4));
+
+        // Simpan kode ke claim
+        $claim->update([
+            'status' => 'approved',
+            'verification_code' => $code 
+        ]);
+
         // 3. Kurangi Stok
         $newQuantity = $foodItem->quantity - $claim->quantity;
         $foodItem->quantity = $newQuantity;
-
-        // 4. Update Status Claim jadi Approved
-        $claim->update(['status' => 'approved']);
 
         // 5. Logika Sisa Stok
         if ($newQuantity <= 0) {
@@ -275,7 +294,42 @@ class DonorController extends Controller
             $foodItem->save();
         }
 
-        return back()->with('success', 'Permintaan disetujui. Stok telah diperbarui.');
+        return back()->with('success', 'Permintaan disetujui. Silakan tunggu penerima menunjukkan kode verifikasi saat pengambilan.');
+    }
+
+    public function verify(Request $request, Claim $claim)
+    {
+        if ($claim->fooditems->user_id !== Auth::id()) abort(403);
+
+        // Validasi Input
+        $request->validate([
+            'verification_code' => 'required|string',
+        ]);
+
+        // Cek Kesesuaian Kode
+        // Kita gunakan strcasecmp untuk case-insensitive (huruf besar/kecil dianggap sama)
+        if (strcasecmp($request->verification_code, $claim->verification_code) !== 0) {
+            return back()->with('error', 'Kode verifikasi salah! Silakan coba lagi.');
+        }
+
+        // Jika Benar:
+        // 1. Ubah status Claim jadi 'completed'
+        $claim->update(['status' => 'completed']);
+
+        // 2. Cek apakah Food Item ini sudah selesai total?
+        // Jika stok 0 DAN tidak ada lagi claim yang 'pending' atau 'approved' (artinya semua sudah completed/rejected)
+        $foodItem = $claim->fooditems;
+        
+        $activeClaimsCount = \App\Models\Claim::where('food_id', $foodItem->id)
+                                ->whereIn('status', ['pending', 'approved'])
+                                ->count();
+
+        if ($foodItem->quantity == 0 && $activeClaimsCount == 0) {
+            // Tandai makanan selesai total -> Masuk History Donor
+            $foodItem->update(['status' => 'completed']);
+        }
+
+        return back()->with('success', 'Verifikasi berhasil! Transaksi selesai.');
     }
 
     public function reject(Request $request, Claim $claim)

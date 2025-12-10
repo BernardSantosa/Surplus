@@ -1,27 +1,37 @@
 @extends('layouts.donor')
 
 @section('content')
+
+<style>
+    .nav-pills .nav-link.active {
+        background-color: #198754 !important;
+    }
+    .nav-pills .nav-link {
+        color: #198754;
+    }
+</style>
+
 <div class="row mb-4">
     <div class="col-md-8">
         <h2 class="fw-bold text-success">Halo, {{ $user->name }}! 👋</h2>
         <p class="text-muted">Siap menyelamatkan makanan hari ini?</p>
     </div>
     <div class="col-md-4 text-end">
-        <a href="{{ route('donor.food.create') }}" class="btn btn-success btn-lg shadow-sm">
+        <a href="{{ route('donor.food.create') }}" class="btn btn-success btn-md shadow-sm">
             + Donasi Makanan
         </a>
     </div>
 </div>
 
-<div class="row mb-5">
+<div class="row mb-5 g-2">
     {{-- KOLOM 1: DONASI AKTIF (Biru) --}}
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-primary text-white h-100">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm bg-primary text-dark h-100">
             <div class="card-body p-4 d-flex align-items-center justify-content-between">
                 <div>
-                    <h5 class="mb-0 text-white-50">Donasi Aktif</h5>
+                    <h5 class="mb-0 text-dark-50">Donasi Aktif</h5>
                     <h2 class="fw-bold mb-0">{{ $totalActive }}</h2>
-                    <small class="text-white-50">Siap diambil</small>
+                    <small class="text-dark-50">Siap diambil</small>
                 </div>
                 <div class="fs-1 opacity-25">
                     <i class="bi bi-box-seam"></i>
@@ -29,26 +39,10 @@
             </div>
         </div>
     </div>
-
-    {{-- KOLOM 2: DONASI SELESAI (Hijau) --}}
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-success text-white h-100">
-            <div class="card-body p-4 d-flex align-items-center justify-content-between">
-                <div>
-                    <h5 class="mb-0 text-white-50">Donasi Selesai</h5>
-                    <h2 class="fw-bold mb-0">{{ $totalCompleted }}</h2>
-                    <small class="text-white-50">Telah disalurkan</small>
-                </div>
-                <div class="fs-1 opacity-25">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    
     {{-- KOLOM 3: PERMINTAAN MASUK (Kuning) --}}
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-warning text-dark h-100">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-dark h-100" style="background-color: #f75151;">
             <div class="card-body p-4 d-flex align-items-center justify-content-between">
                 <div>
                     <h5 class="mb-0 text-dark-50">Permintaan Masuk</h5>
@@ -57,6 +51,38 @@
                 </div>
                 <div class="fs-1 opacity-25">
                     <i class="bi bi-inbox-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- KOLOM 2: KLAIM SELESAI (Hijau) --}}
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm bg-warning text-dark h-100">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-0 text-dark-50">Klaim Selesai</h5>
+                    <h2 class="fw-bold mb-0">{{ $totalClaimsCompleted }}</h2>
+                    <small class="text-dark-50">Telah disalurkan</small>
+                </div>
+                <div class="fs-1 opacity-25">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- KOLOM 2: DONASI SELESAI (Hijau) --}}
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-dark h-100" style="background-color: #53d170;">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-0 text-dark-50">Donasi Selesai</h5>
+                    <h2 class="fw-bold mb-0">{{ $totalCompleted }}</h2>
+                    <small class="text-dark-50">Telah disalurkan</small>
+                </div>
+                <div class="fs-1 opacity-25">
+                    <i class="bi bi-check-circle"></i>
                 </div>
             </div>
         </div>
@@ -130,7 +156,6 @@
                                     <td class="text-center">
                                         {{-- Hapus fw-bold dan fs-5 --}}
                                         <span class="text-dark">{{ $item->quantity }}</span> 
-                                        <small class="text-muted d-block">Porsi</small>
                                     </td>
 
                                     {{-- TAMPILKAN PICKUP TIME DI SINI --}}
@@ -150,7 +175,7 @@
                                             <span class="text-dark">{{ \Carbon\Carbon::parse($item->expires_at)->format('d M Y') }}</span>
                                             {{-- Hitung sisa hari --}}
                                             <div class="small text-muted">
-                                                {{ \Carbon\Carbon::parse($item->expires_at)->diffForHumans() }}
+                                                {{ \Carbon\Carbon::parse($item->expires_at)->locale('id')->diffForHumans() }}
                                             </div>
                                         @endif
                                     </td>
@@ -235,7 +260,6 @@
 
                                     <td class="text-center">
                                         <span class="text-dark">{{ $claim->quantity }}</span>
-                                        <span class="d-block small text-muted">Porsi</span>
                                     </td>
 
                                     {{-- KOLOM PESAN --}}
@@ -356,17 +380,61 @@
                                     {{-- KOLOM JUMLAH --}}
                                     <td class="text-center">
                                         <span class="">{{ $claim->quantity }}</span>
-                                        <span class="d-block small text-muted">Porsi</span>
                                     </td>
 
                                     {{-- KOLOM AKSI --}}
                                     <td>
-                                        <form action="{{ route('donor.claims.cancel', $claim->id) }}" method="POST" onsubmit="return confirm('Batalkan pickup untuk {{ $claim->receiver->name }}? Stok akan dikembalikan.');">
-                                            @csrf @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger w-50">
-                                                <i class="bi bi-x-circle"></i> Batalkan
+                                        <div class="d-flex gap-2">
+                                            {{-- TOMBOL VERIFIKASI --}}
+                                            <button type="button" class="btn btn-sm btn-outline-success" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#verifyModal-{{ $claim->id }}">
+                                                <i class="bi bi-qr-code-scan"></i> Konfirmasi
                                             </button>
-                                        </form>
+
+                                            {{-- Tombol Batal (yg lama) --}}
+                                            <form action="{{ route('donor.claims.cancel', $claim->id) }}" method="POST" onsubmit="return confirm('...');">
+                                                @csrf @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle"></i> Batalkan
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        {{-- MODAL VERIFIKASI --}}
+                                        <div class="modal fade" id="verifyModal-{{ $claim->id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-sm modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header border-0 pb-0">
+                                                        <h6 class="modal-title fw-bold">Konfirmasi Donasi Selesai</h6>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        <p class="small text-muted mb-3">
+                                                            Masukkan kode 4 digit yang ditunjukkan oleh <strong>{{ $claim->receiver->name }}</strong>:
+                                                        </p>
+                                                        
+                                                        <form action="{{ route('donor.claims.verify', $claim->id) }}" method="POST">
+                                                            @csrf @method('PATCH')
+                                                            
+                                                            <div class="mb-3">
+                                                                <input type="text" 
+                                                                    name="verification_code" 
+                                                                    class="form-control form-control-lg text-center fw-bold text-uppercase letter-spacing-2" 
+                                                                    placeholder="XXXX" 
+                                                                    maxlength="4" 
+                                                                    autocomplete="off"
+                                                                    required>
+                                                            </div>
+
+                                                            <button type="submit" class="btn btn-success w-100">
+                                                                Konfirmasi
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -377,43 +445,133 @@
             </div>
 
             <div class="tab-pane fade" id="history" role="tabpanel">
-                @if($historyItems->isEmpty())
-                    <p class="text-center text-muted py-4">Belum ada riwayat donasi.</p>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nama Makanan</th>
-                                    <th>Tanggal Dibuat</th>
-                                    <th>Status Akhir</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($historyItems as $item)
-                                <tr>
-                                    <td>{{ $item->name }}</td>
-                                    <td>{{ $item->created_at->format('d M Y') }}</td>
-                                    <td>
-                                        @if($item->status == 'completed')
-                                            <span class="badge bg-success">Selesai (Disalurkan)</span>
-                                        @elseif($item->status == 'cancelled')
-                                            <span class="badge bg-danger">Dibatalkan</span>
-                                        {{-- TAMBAHAN: Badge Khusus Expired --}}
-                                        @elseif($item->status == 'expired')
-                                            <span class="badge bg-secondary">
-                                                Kedaluwarsa
-                                            </span>
-                                        @else
-                                            <span class="badge bg-secondary">{{ ucfirst($item->status) }}</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+
+                <div class="card border-0 bg-light mb-3">
+                    <div class="card-body p-2">
+                        {{-- SUB-TABS NAVIGATION --}}
+                        <ul class="nav nav-pills" id="historySubTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active small" id="history-claims-tab" data-bs-toggle="pill" data-bs-target="#history-claims" type="button" role="tab">
+                                    <i class="bi bi-receipt-cutoff"></i> Riwayat Klaim
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link small" id="history-items-tab" data-bs-toggle="pill" data-bs-target="#history-items" type="button" role="tab">
+                                    <i class="bi bi-box-seam"></i> Riwayat Donasi
+                                </button>
+                            </li>
+                        </ul>
                     </div>
-                @endif
+                </div>
+
+                {{-- SUB-TABS CONTENT --}}
+                <div class="tab-content" id="historySubTabContent">
+                    
+                    {{-- SUB-TAB 1: RIWAYAT CLAIM (Transaksi per User) --}}
+                    <div class="tab-pane fade show active" id="history-claims" role="tabpanel">
+                        @if($historyClaims->isEmpty())
+                            <p class="text-center text-muted py-4">Belum ada riwayat transaksi penerima.</p>
+                        @else
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tanggal Selesai</th>
+                                            <th>Penerima</th>
+                                            <th>Nama Makanan</th>
+                                            <th class="text-center">Jumlah</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($historyClaims as $claim)
+                                        <tr>
+                                            <td>
+                                                <div class="">{{ $claim->updated_at->format('d M Y') }}</div>
+                                                <small class="">{{ $claim->updated_at->format('H:i') }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-person-circle text-secondary fs-3 me-2"></i>
+                                                    <span class="text-dark">{{ $claim->receiver->name ?? 'User' }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if($claim->fooditems && $claim->fooditems->photo)
+                                                    <img src="{{ asset($claim->fooditems->photo) }}" width="40" height="40" class="rounded me-2 object-fit-cover">
+                                                @endif
+                                                <span class="text-dark">{{ $claim->fooditems->name ?? '-' }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="fw-bold">{{ $claim->quantity }}</span>
+                                            </td>
+                                            <td>
+                                                @if($claim->status == 'completed')
+                                                    <span class="badge bg-success">
+                                                        Selesai
+                                                    </span>
+                                                    {{-- @if($claim->verification_code)
+                                                        <div class="small text-muted mt-1" style="font-size: 0.7rem;">Code: {{ $claim->verification_code }}</div>
+                                                    @endif --}}
+                                                @elseif($claim->status == 'rejected')
+                                                    <span class="badge bg-danger">Ditolak</span>
+                                                @elseif($claim->status == 'cancelled')
+                                                    <span class="badge bg-secondary">Batal</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- SUB-TAB 2: RIWAYAT FOOD ITEM (Stok Makanan) --}}
+                    <div class="tab-pane fade" id="history-items" role="tabpanel">
+                        @if($historyItems->isEmpty())
+                            <p class="text-center text-muted py-4">Belum ada riwayat stok makanan.</p>
+                        @else
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Nama Makanan</th>
+                                            {{-- <th>Dibuat Tanggal</th> --}}
+                                            <th>Status Akhir</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($historyItems as $item)
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if($item->photo)
+                                                        <img src="{{ asset($item->photo) }}" class="rounded me-2" width="40" height="40" style="object-fit: cover;">
+                                                    @endif
+                                                    <span class="">{{ $item->name }}</span>
+                                                </div>
+                                            </td>
+                                            {{-- <td>{{ $item->created_at->format('d M Y') }}</td> --}}
+                                            <td>
+                                                @if($item->status == 'completed')
+                                                    <span class="badge bg-success">Didonasikan</span>
+                                                @elseif($item->status == 'cancelled')
+                                                    <span class="badge bg-danger">Dibatalkan</span>
+                                                @elseif($item->status == 'expired')
+                                                    <span class="badge bg-secondary">Kedaluwarsa</span>
+                                                @else
+                                                    <span class="badge bg-light text-dark border">{{ ucfirst($item->status) }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
 
         </div>
