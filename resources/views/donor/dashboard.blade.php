@@ -14,7 +14,7 @@
 <div class="row mb-4">
     <div class="col-md-8">
         <h2 class="fw-bold text-success">Halo, {{ $user->name }}! 👋</h2>
-        <p class="text-muted">Siap menyelamatkan makanan hari ini?</p>
+        <p class="text-muted">Yuk bantu kurangi food waste hari ini!</p>
     </div>
     <div class="col-md-4 text-end">
         <a href="{{ route('donor.food.create') }}" class="btn btn-success btn-md shadow-sm">
@@ -139,7 +139,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($item->photo)
-                                                <img src="{{ asset($item->photo) }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
+                                                <img src="{{ $item->photo_url }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
                                             @else
                                                 <div class="rounded bg-secondary me-3 d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">?</div>
                                             @endif
@@ -242,7 +242,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($claim->fooditems && $claim->fooditems->photo)
-                                                <img src="{{ asset($claim->fooditems->photo) }}" width="50" height="50" class="rounded me-3 object-fit-cover">
+                                                <img src="{{ $claim->fooditems->photo_url }}" width="50" height="50" class="rounded me-3 object-fit-cover">
                                             @else
                                                 <div class="rounded bg-light me-3 d-flex align-items-center justify-content-center text-muted border" style="width: 50px; height: 50px;">
                                                     <i class="bi bi-egg-fried"></i>
@@ -371,7 +371,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($claim->fooditems && $claim->fooditems->photo)
-                                                <img src="{{ asset($claim->fooditems->photo) }}" width="40" height="40" class="rounded me-2 object-fit-cover">
+                                                <img src="{{ $claim->fooditems->photo_url }}" width="50" height="50" class="rounded me-3 object-fit-cover">
                                             @endif
                                             <span class="text-dark">{{ $claim->fooditems->name ?? '-' }}</span>
                                         </div>
@@ -488,7 +488,7 @@
                                         <tr>
                                             <td>
                                                 <div class="">{{ $claim->updated_at->format('d M Y') }}</div>
-                                                <small class="">{{ $claim->updated_at->format('H:i') }}</small>
+                                                <small class="">{{ $claim->updated_at->format('H:i') }}  WIB</small>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -498,7 +498,7 @@
                                             </td>
                                             <td>
                                                 @if($claim->fooditems && $claim->fooditems->photo)
-                                                    <img src="{{ asset($claim->fooditems->photo) }}" width="40" height="40" class="rounded me-2 object-fit-cover">
+                                                    <img src="{{ $claim->fooditems->photo_url }}" width="50" height="50" class="rounded me-3 object-fit-cover">
                                                 @endif
                                                 <span class="text-dark">{{ $claim->fooditems->name ?? '-' }}</span>
                                             </td>
@@ -547,7 +547,7 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     @if($item->photo)
-                                                        <img src="{{ asset($item->photo) }}" class="rounded me-2" width="40" height="40" style="object-fit: cover;">
+                                                        <img src="{{ $item->photo_url }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
                                                     @endif
                                                     <span class="">{{ $item->name }}</span>
                                                 </div>

@@ -73,14 +73,16 @@ class DonorController extends Controller
 
         // 3. Tab Riwayat: Selesai, Expired, atau Dibatalkan (Read Only)
         $historyItemsQuery = FoodItem::where('user_id', $userId)
-                    ->whereIn('status', ['completed', 'expired', 'cancelled']);
+                    ->whereIn('status', ['completed', 'expired', 'cancelled'])
+                    ->orderBy('updated_at', 'desc');
         $historyItems = $historyItemsQuery->get();
 
         $historyClaimsQuery = Claim::whereHas('fooditems', function($q) use ($userId) {
             $q->where('user_id', $userId);
         })
         ->whereIn('status', ['completed', 'rejected', 'cancelled']) // Ambil yang sudah final
-        ->with(['fooditems', 'receiver']);
+        ->with(['fooditems', 'receiver'])
+        ->orderBy('updated_at', 'desc');
         $historyClaims = $historyClaimsQuery->get();
 
         return view('donor.dashboard', compact(
@@ -113,8 +115,8 @@ class DonorController extends Controller
 
         $photoPath = null;
         if ($request->hasFile('photo')) {
-            // Simpan ke folder 'storage/app/public/foodImages'
-            $photoPath = $request->file('photo')->store('foodImages', 'public');
+            // Simpan ke folder 'storage/app/public/images/foodImages'
+            $photoPath = $request->file('photo')->store('images/foodImages', 'public');
         }
 
         FoodItem::create([
@@ -355,14 +357,35 @@ class DonorController extends Controller
         $userId = Auth::id(); // FIX: Uses logged-in user
         $user = User::findOrFail($userId);
 
-        // Statistik
-        $totalDonations = FoodItem::where('user_id', $userId)->count();
-        $activeDonations = FoodItem::where('user_id', $userId)->where('status', 'available')->count();
-        $completedDonations = FoodItem::where('user_id', $userId)->where('status', 'claimed')->count();
+        // --- STATISTIK BARU (4 Kolom) ---
+    
+        // 1. Donasi Aktif (Stok Available)
+        $totalActive = FoodItem::where('user_id', $userId)
+                        ->where('status', 'available')
+                        ->count();
+
+        // 2. Permintaan Masuk (Pending)
+        $totalRequests = Claim::whereHas('fooditems', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })->where('status', 'pending')->count();
+
+        // 3. Klaim Selesai (Transaksi/Orang Berhasil)
+        $totalClaimsCompleted = Claim::whereHas('fooditems', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })->where('status', 'completed')->count();
+
+        // 4. Donasi Selesai (Item Habis/Completed)
+        $totalCompleted = FoodItem::where('user_id', $userId)
+                        ->where('status', 'completed')
+                        ->count();
+
+        // Recent Activity (Tetap sama)
         $recentDonations = FoodItem::where('user_id', $userId)->latest()->limit(5)->get();
 
         return view('donor.profile', compact(
-            'user', 'totalDonations', 'activeDonations', 'completedDonations', 'recentDonations'
+            'user', 
+            'totalActive', 'totalRequests', 'totalClaimsCompleted', 'totalCompleted',
+            'recentDonations'
         ));
     }
 

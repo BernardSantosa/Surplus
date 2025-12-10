@@ -1,80 +1,272 @@
 @extends('layouts.donor')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Formulir Donasi Makanan</h5>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<style>
+    #map { height: 300px; width: 100%; border-radius: 12px; z-index: 1; }
+    .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar { border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+</style>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            {{-- Header Navigation --}}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1">Buat Donasi Baru</h3>
+                    <p class="text-muted mb-0">Isi detail makanan yang ingin Anda bagikan.</p>
+                </div>
+                <a href="{{ route('donor.dashboard') }}" class="btn btn-outline-secondary pill px-4">
+                    <i class="bi bi-arrow-left me-2"></i> Kembali
+                </a>
             </div>
-            <div class="card-body">
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
 
-                <form action="{{ route('donor.food.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf <div class="mb-3">
-                        <label class="form-label">Nama Makanan</label>
-                        <input type="text" name="name" class="form-control" placeholder="Contoh: Nasi Kotak Sisa Rapat" required>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Kategori</label>
-                            <select name="category_id" class="form-select" required>
-                                <option value="">Pilih Kategori...</option>
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-success text-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-basket me-2"></i> Form Informasi Makanan</h6>
+                </div>
+                
+                <div class="card-body p-4">
+                    {{-- Show Validation Errors --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger rounded-3">
+                            <ul class="mb-0 small">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
                                 @endforeach
-                            </select>
+                            </ul>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Jumlah (Porsi/Pack)</label>
-                            <input type="number" name="quantity" class="form-control" min="1" value="1" required>
+                    @endif
+
+                    <form action="{{ route('donor.food.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        {{-- SECTION 1: PHOTO & BASIC INFO --}}
+                        <div class="row g-4 mb-4">
+                            {{-- Photo Upload with Preview --}}
+                            <div class="col-md-4 text-center">
+                                <label class="form-label fw-bold">Foto Makanan</label>
+                                <div class="position-relative">
+                                    <div class="ratio ratio-1x1 bg-light rounded-4 border border-dashed d-flex align-items-center justify-content-center overflow-hidden" 
+                                         style="border-style: dashed !important; cursor: pointer;" 
+                                         onclick="document.getElementById('photoInput').click()">
+                                        
+                                        <img id="imagePreview" src="#" alt="Preview" class="w-100 h-100 object-fit-cover d-none">
+                                        
+                                        <div id="uploadPlaceholder" class="text-center p-3">
+                                            <i class="bi bi-camera fs-1 text-muted opacity-50"></i>
+                                            <div class="small text-muted mt-2">Klik untuk upload foto</div>
+                                        </div>
+                                    </div>
+                                    <input type="file" name="photo" id="photoInput" class="d-none" accept="image/*" onchange="previewImage(this)">
+                                </div>
+                                @error('photo') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            </div>
+
+                            {{-- Name, Category & Quantity --}}
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nama Makanan <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control form-control bg-light" placeholder="Contoh: Roti Manis Isi Coklat" value="{{ old('name') }}" required>
+                                    @error('name') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Kategori <span class="text-danger">*</span></label>
+                                        <select name="category_id" class="form-select bg-light" required>
+                                            <option value="">-- Pilih --</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('category_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Jumlah Porsi <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="number" name="quantity" class="form-control bg-light" placeholder="0" min="1" value="{{ old('quantity') }}" required>
+                                            <span class="input-group-text bg-white text-muted">Porsi</span>
+                                        </div>
+                                        @error('quantity') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi & Kondisi</label>
-                        <textarea name="description" class="form-control" rows="3" placeholder="Jelaskan detail makanan (misal: dimasak jam 8 pagi)"></textarea>
-                    </div>
+                        <hr class="border-light my-4">
 
-                    <div class="mb-3">
-                        <label class="form-label">Lokasi Pengambilan</label>
-                        <textarea name="pickup_location" class="form-control" rows="2" required>{{ $user->address }}</textarea>  {{-- {{ Auth::user()->address }} --}}
-                        <small class="text-muted">Default: Alamat profil Anda.</small>
-                    </div>
+                        {{-- SECTION 2: LOGISTICS (Time & Location) --}}
+                        <h6 class="fw-bold text-success mb-3"><i class="bi bi-geo-alt me-2"></i>Detail Pengambilan</h6>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Kedaluwarsa <span class="text-danger">*</span></label>
+                                <input type="date" name="expires_at" class="form-control bg-light" value="{{ old('expires_at') }}" required>
+                            </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Waktu Pengambilan</label>
-                        <input type="text" name="pickup_time" class="form-control" placeholder="Contoh: 15.00 - 17.00 WIB" required>
-                        <div class="form-text text-muted">Tentukan jam berapa penerima bisa mengambil makanan.</div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tanggal Kadaluarsa (Estimasi)</label>
-                            <input type="date" name="expires_at" class="form-control" required>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Waktu Pickup <span class="text-danger">*</span></label>
+                                <input type="text" name="pickup_time" class="form-control bg-light" placeholder="Cth: 15.00 - 18.00" value="{{ old('pickup_time') }}" required>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Foto Makanan</label>
-                            <input type="file" name="photo" class="form-control" accept="image/*">
-                        </div>
-                    </div>
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success btn-lg">Kirim Donasi</button>
-                        <a href="{{ route('donor.dashboard') }}" class="btn btn-secondary">Batal</a>
-                    </div>
-                </form>
+                        {{-- MAPS INTEGRATION --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Lokasi Pickup <span class="text-danger">*</span></label>
+                            
+                            <div class="input-group mb-2">
+                                <span class="input-group-text bg-white text-muted"><i class="bi bi-geo-alt-fill text-danger"></i></span>
+                                
+                                {{-- Input Alamat --}}
+                                <input type="text" id="pickup_location" name="pickup_location" class="form-control bg-light" 
+                                    placeholder="Cari di peta atau ketik alamat..." 
+                                    value="{{ old('pickup_location', auth()->user()->address) }}" required>
+                                
+                                {{-- TOMBOL BARU: DETEKSI LOKASI --}}
+                                <button class="btn btn-outline-secondary" type="button" onclick="locateUser()" title="Gunakan Lokasi Saya Saat Ini">
+                                    <i class="bi bi-crosshair"></i> Lokasi Saya
+                                </button>
+                            </div>
+
+                            {{-- Wadah Peta --}}
+                            <div id="map" class="border shadow-sm"></div>
+                            <div class="form-text small text-muted"><i class="bi bi-info-circle"></i> Marker otomatis mengikuti lokasi Anda. Geser marker untuk menyesuaikan.</div>
+                        </div>
+
+                        {{-- SECTION 3: DESCRIPTION --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Deskripsi Tambahan <span class="opacity-50">(Opsional)</span></label>
+                            <textarea name="description" class="form-control bg-light" rows="3" placeholder="Jelaskan kondisi makanan, halal/non-halal, atau instruksi khusus..."></textarea>
+                            @error('description') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                        </div>
+
+                        {{-- ACTION BUTTONS --}}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ route('donor.dashboard') }}" class="btn btn-light btn-md px-4 text-secondary w-50">Batal</a>
+                            <button type="submit" class="btn btn-success btn-md px-5 shadow-sm w-50">
+                                Unggah Donasi
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+{{-- Simple Image Preview Script --}}
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const placeholder = document.getElementById('uploadPlaceholder');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 2. LEAFLET MAP LOGIC
+    // Variable global untuk akses fungsi dari luar DOMContentLoaded
+    let locateUser; 
+
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // 1. Setup Peta
+        let defaultLat = -6.175392; // Default Monas
+        let defaultLng = 106.827153;
+        
+        var map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
+
+        // 2. Fungsi Get Address (Reverse Geocoding)
+        async function getAddress(lat, lng) {
+            document.getElementById('pickup_location').placeholder = "Sedang mencari nama jalan...";
+            try {
+                let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+                let data = await response.json();
+                if(data && data.display_name) {
+                    let shortAddress = data.display_name.split(',').slice(0, 4).join(',');
+                    document.getElementById('pickup_location').value = shortAddress;
+                }
+            } catch (error) {
+                console.error("Gagal mengambil alamat:", error);
+            }
+        }
+
+        // 3. Event Listener Marker
+        marker.on('dragend', function(e) {
+            var position = marker.getLatLng();
+            getAddress(position.lat, position.lng);
+        });
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            getAddress(e.latlng.lat, e.latlng.lng);
+        });
+
+        // 4. LOGIC AUTO DETECT LOCATION (INTI PERMINTAAN ANDA)
+        locateUser = function() {
+            if (navigator.geolocation) {
+                // Beri feedback visual
+                document.getElementById('pickup_location').placeholder = "Mendeteksi lokasi GPS...";
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var userLat = position.coords.latitude;
+                        var userLng = position.coords.longitude;
+
+                        // Pindahkan Peta & Marker ke Lokasi User
+                        map.setView([userLat, userLng], 16);
+                        marker.setLatLng([userLat, userLng]);
+
+                        // Selalu update alamat berdasarkan GPS (opsional: bisa dicek if kosong dulu)
+                        getAddress(userLat, userLng);
+                    },
+                    function(error) {
+                        console.warn("Akses lokasi ditolak atau error:", error.message);
+                        // Jangan alert error agar tidak mengganggu jika user sengaja menolak
+                    },
+                    { enableHighAccuracy: true } // Minta akurasi tinggi (GPS)
+                );
+            } else {
+                alert("Browser ini tidak mendukung Geolocation.");
+            }
+        }
+
+        // 5. JALANKAN SAAT LOAD
+        // Cek: Jika input alamat masih kosong, atau user ingin auto-detect default
+        // Kita jalankan otomatis.
+        let currentAddress = document.getElementById('pickup_location').value;
+        if (!currentAddress || currentAddress.trim() === "") {
+            locateUser(); // Auto-run jika belum ada alamat
+        } else {
+            // Jika sudah ada alamat (misal dari profil), kita biarkan user klik tombol manual saja
+            // agar tidak menimpa alamat yang sudah tersimpan.
+            // Namun, jika Anda ingin *selalu* auto-detect, hapus kondisi 'if' ini dan panggil locateUser() langsung.
+        }
+    });
+</script>
 @endsection

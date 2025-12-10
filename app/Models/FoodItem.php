@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class FoodItem extends Model
 {
@@ -35,5 +36,23 @@ class FoodItem extends Model
     public function claims()
     {
         return $this->hasMany(Claim::class, 'food_id');
+    }
+
+    public function getPhotoUrlAttribute()
+    {
+        // 1. Jika tidak ada foto, kembalikan placeholder/null
+        if (!$this->photo) {
+            return 'https://placehold.co/800x400?text=No+Image'; // Opsional: default image
+        }
+
+        // 2. Cek apakah ini foto sample (dari seeder)
+        // Kita cek apakah stringnya mengandung "images/sample-"
+        if (Str::startsWith($this->photo, 'images/sample-')) {
+            return asset($this->photo);
+        }
+
+        // 3. Jika bukan sample, berarti ini dari Upload (Storage)
+        // Kita harus tambahkan prefix 'storage/' agar bisa diakses
+        return asset('storage/' . $this->photo);
     }
 }
