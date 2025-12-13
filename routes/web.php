@@ -78,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/food/{foodItem}/claim', [ReceiverController::class, 'storeClaim'])->name('receiver.claim.store');
         Route::get('/history', [ReceiverController::class, 'history'])->name('receiver.history');
         Route::patch('/claim/{claim}/cancel', [ReceiverController::class, 'cancelClaim'])->name('receiver.claim.cancel');
+        Route::get('/history/{claim}', [ReceiverController::class, 'showHistoryDetail'])->name('receiver.history.show');
     });
 
 });

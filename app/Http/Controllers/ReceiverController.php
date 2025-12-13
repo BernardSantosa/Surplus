@@ -88,6 +88,7 @@ class ReceiverController extends Controller
         $claimsHistory = Claim::with(['fooditems.users']) 
                             ->where('receiver_id', $userId)
                             ->latest()
+                            ->take(5)
                             ->get();
 
         return view('receiver.profile', compact('user', 'totalClaims', 'pendingClaims', 'approvedClaims', 'claimsHistory'));
@@ -211,5 +212,18 @@ class ReceiverController extends Controller
         $claimsHistory = $query->paginate(10)->withQueryString();
 
         return view('receiver.history', compact('claimsHistory'));
+    }
+
+    public function showHistoryDetail(\App\Models\Claim $claim)
+    {
+        // Pastikan hanya pemilik claim yang bisa lihat
+        if ($claim->receiver_id != \Illuminate\Support\Facades\Auth::id()) {
+            abort(403);
+        }
+
+        // Load relasi makanan dan user pemilik makanan (donatur)
+        $claim->load(['fooditems.users', 'fooditems.category']);
+
+        return view('receiver.history-show', compact('claim'));
     }
 }

@@ -3,83 +3,202 @@
 @section('content')
 <div class="container py-4">
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-success text-white shadow-sm border-0">
-                <div class="card-body p-4 d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center gap-4">
-                        <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" 
-                             style="width: 80px; height: 80px; font-size: 32px;">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                        </div>
-                        <div>
-                            <h2 class="fw-bold mb-0">{{ $user->name }}</h2>
-                            <p class="mb-0 opacity-75">{{ $user->email }}</p>
-                            <small class="opacity-75">Bergabung sejak: {{ \Carbon\Carbon::parse($user->created_at)->format('d F Y') }}</small>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="{{ route('receiver.profile-edit') }}" class="btn btn-light text-success fw-bold">
-                            <i class="bi bi-pencil"></i> Edit Profil
-                        </a>
-                    </div>
-                </div>
-            </div>
+    @if(session('success'))
+        <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center">
+            <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+            <div>{{ session('success') }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    </div>
+    @endif
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white fw-bold py-3">Informasi Kontak</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <small class="text-muted d-block">No. Telepon</small>
-                        <span class="fw-medium fs-5">{{ $user->phone ?? '-' }}</span>
-                    </div>
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Alamat</small>
-                        <span class="fw-medium">{{ $user->address ?? '-' }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-8 mb-4">
-            <div class="row g-3 h-100">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm bg-primary text-white h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h1 class="fw-bold mb-0">{{ $totalClaims }}</h1>
-                            <small>Total Request</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm bg-warning text-dark h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h1 class="fw-bold mb-0">{{ $pendingClaims }}</h1>
-                            <small>Menunggu</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm bg-success text-white h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <h1 class="fw-bold mb-0">{{ $approvedClaims }}</h1>
-                            <small>Berhasil/Selesai</small>
-                        </div>
-                    </div>
-                </div>
+    <div class="row g-4">
+        {{-- KIRI: KARTU PROFIL --}}
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <div class="bg-success bg-gradient p-4 text-center" style="height: 100px;"></div>
                 
-                <div class="col-12 mt-3">
-                    <a href="{{ route('receiver.history') }}" class="btn btn-outline-success w-100 py-3 border-2 border-dashed">
-                        Lihat Riwayat Lengkap Makanan &rarr;
+                <div class="card-body text-center p-4 mt-n5">
+                    <div class="position-relative d-inline-block mb-3">
+                        <div class="rounded-circle bg-white p-1 shadow-sm">
+                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" 
+                                 style="width: 100px; height: 100px; font-size: 36px; font-weight: bold;">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="fw-bold text-dark mb-1">{{ $user->name }}</h4>
+                    <span class="badge bg-light text-success border border-success mb-4 px-3 rounded-pill">
+                        Penerima (Receiver)
+                    </span>
+
+                    <div class="text-start bg-light rounded-4 p-3 mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded-circle shadow-sm me-3 text-success"><i class="bi bi-envelope"></i></div>
+                            <div class="overflow-hidden">
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">Email</small>
+                                <span class="fw-medium text-dark text-truncate d-block">{{ $user->email }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded-circle shadow-sm me-3 text-success"><i class="bi bi-telephone"></i></div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">No. Telepon</small>
+                                <span class="fw-medium text-dark">{{ $user->phone ?? '-' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded-circle shadow-sm me-3 text-success"><i class="bi bi-geo-alt"></i></div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">Alamat Utama</small>
+                                <span class="fw-medium text-dark">{{ $user->address ?? '-' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white p-2 rounded-circle shadow-sm me-3 text-success"><i class="bi bi-calendar-check"></i></div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">Bergabung Sejak</small>
+                                <span class="fw-medium text-dark">{{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('receiver.profile-edit') }}" class="btn btn-success w-100 rounded-pill py-2 shadow-sm">
+                        <i class="bi bi-pencil-square me-2"></i> Edit Profil
                     </a>
                 </div>
             </div>
         </div>
-    </div>
 
+        {{-- KANAN: STATISTIK & HISTORY --}}
+        <div class="col-md-8">
+            <div class="row mb-4 g-2">
+                {{-- 1. Total Request (Biru) --}}
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-primary text-white h-100 rounded-4">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-0 text-white-50 small">Total Request</h6>
+                                <h2 class="fw-bold mb-0">{{ $totalClaims }}</h2>
+                            </div>
+                            <div class="fs-1 opacity-25">
+                                <i class="bi bi-inbox-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 2. Menunggu (Kuning) --}}
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-warning text-dark h-100 rounded-4">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-0 text-dark-50 small">Menunggu</h6>
+                                <h2 class="fw-bold mb-0">{{ $pendingClaims }}</h2>
+                            </div>
+                            <div class="fs-1 opacity-25">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 3. Berhasil/Selesai (Hijau) --}}
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 rounded-4" style="background-color: #53d170; color: #004d1a;">
+                        <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-0 small" style="opacity: 0.7;">Berhasil</h6>
+                                <h2 class="fw-bold mb-0">{{ $approvedClaims }}</h2>
+                            </div>
+                            <div class="fs-1 opacity-25">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- TABEL RIWAYAT TRANSAKSI TERAKHIR (Preview) --}}
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-clock-history me-2 text-success"></i> Aktivitas Terakhir
+                    </h5>
+                    <a href="{{ route('receiver.history') }}" class="btn btn-sm btn-light rounded-pill px-3 text-secondary fw-bold small">
+                        Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr class="text-uppercase small text-secondary">
+                                    <th class="ps-4">Makanan</th>
+                                    <th>Donor</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($claimsHistory as $claim)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-3">
+                                            @if($claim->fooditems && $claim->fooditems->photo)
+                                                <img src="{{ asset($claim->fooditems->photo) }}" 
+                                                     class="rounded shadow-sm object-fit-cover" width="40" height="40">
+                                            @else
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border" 
+                                                     style="width:40px; height:40px;"><i class="bi bi-egg-fried"></i></div>
+                                            @endif
+                                            <div>
+                                                <div class="fw-bold text-dark small">{{ $claim->fooditems->name ?? 'Item Dihapus' }}</div>
+                                                <small class="text-muted" style="font-size: 0.75rem;">{{ $claim->quantity ?? '-' }} Porsi</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center text-secondary small">
+                                            <i class="bi bi-person-circle me-2"></i>
+                                            {{ $claim->fooditems->users->name ?? 'Unknown' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($claim->status == 'pending')
+                                            <span class="badge bg-warning text-dark border border-warning rounded-pill px-3">Pending</span>
+                                        @elseif($claim->status == 'approved')
+                                            <span class="badge bg-success rounded-pill px-3">Disetujui</span>
+                                        @elseif($claim->status == 'completed')
+                                            <span class="badge bg-primary rounded-pill px-3">Selesai</span>
+                                        @elseif($claim->status == 'cancelled')
+                                            <span class="badge bg-secondary rounded-pill px-3">Batal</span>
+                                        @else
+                                            <span class="badge bg-danger rounded-pill px-3">Ditolak</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="text-dark small fw-medium">{{ $claim->created_at->format('d M') }}</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">{{ $claim->created_at->format('H:i') }}</div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <p class="text-muted mb-0 small">Belum ada riwayat transaksi.</p>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

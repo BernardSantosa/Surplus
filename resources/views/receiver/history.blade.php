@@ -33,7 +33,6 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr class="text-uppercase small text-secondary">
-                            {{-- SORT HEADERS --}}
                             <th class="ps-4 py-3">Makanan</th>
                             <th class="py-3">Donor</th>
                             <th class="py-3">Tanggal Request</th>
@@ -55,7 +54,7 @@
                                     @endif
                                     <div>
                                         <div class="fw-bold text-dark">{{ $claim->fooditems->name ?? 'Item Dihapus' }}</div>
-                                        <small class="text-muted">{{ $claim->fooditems->quantity ?? '-' }} Porsi</small>
+                                        <small class="text-muted">{{ $claim->quantity }} Porsi</small>
                                     </div>
                                 </div>
                             </td>
@@ -89,12 +88,11 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-flex justify-content-end gap-2">
-                                    @if($claim->fooditems)
-                                        <a href="{{ route('receiver.food.show', $claim->food_id) }}" 
-                                           class="btn btn-sm btn-outline-success">
-                                            Detail
-                                        </a>
-                                    @endif
+                                    {{-- PERBAIKAN LINK DETAIL: Menggunakan ID CLAIM, bukan Food ID --}}
+                                    <a href="{{ route('receiver.history.show', $claim->id) }}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        Detail
+                                    </a>
 
                                     @if(in_array($claim->status, ['pending', 'claimed']))
                                         <form action="{{ route('receiver.claim.cancel', $claim->id) }}" method="POST" 
