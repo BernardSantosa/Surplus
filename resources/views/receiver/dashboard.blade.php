@@ -19,48 +19,95 @@
     {{-- Optional: Stat Cards if needed, otherwise kept simple --}}
 </div>
 
-{{-- SEARCH & FILTER CARD --}}
-<div class="card border-0 shadow-sm mb-5 rounded-4">
-    <div class="card-body p-4">
+{{-- SEARCH & FILTER SECTION (Redesigned) --}}
+<div class="card border-0 shadow-lg mb-5 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #ffffff 0%, #f8fcf9 100%);">
+    <div class="card-body p-4 p-md-4">
         <form action="{{ route('receiver.dashboard') }}" method="GET">
-            <div class="row g-3">
+            <div class="row g-3 align-items-end">
+                
+                {{-- 1. Input Pencarian (Lebih Dominan) --}}
                 <div class="col-md-5">
-                    <label class="form-label fw-bold text-success small">Cari Nama/Menu</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" class="form-control bg-light border-start-0 ps-0" 
-                               placeholder="Nasi goreng, Roti..." value="{{ request('search') }}">
+                    <label class="form-label fw-bold text-success small text-uppercase letter-spacing-1">
+                        <i class="bi bi-search me-1"></i> Apa yang kamu cari?
+                    </label>
+                    <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                        <span class="input-group-text bg-white border-0 ps-3 text-muted"><i class="bi bi-egg-fried"></i></span>
+                        <input type="text" name="search" class="form-control border-0 bg-white fs-6 py-3" 
+                               placeholder="Cth: Nasi Goreng, Roti..." 
+                               value="{{ request('search') }}"
+                               style="box-shadow: none;">
                     </div>
                 </div>
                 
+                {{-- 2. Dropdown Kategori --}}
                 <div class="col-md-3">
-                    <label class="form-label fw-bold text-success small">Kategori</label>
-                    <select name="category_id" class="form-select bg-light">
-                        <option value="">Semua Kategori</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                                {{ $cat->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-bold text-success small">Lokasi</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-geo-alt"></i></span>
-                        <input type="text" name="location" class="form-control bg-light border-start-0 ps-0" 
-                               placeholder="Jakarta..." value="{{ request('location') }}">
+                    <label class="form-label fw-bold text-success small text-uppercase letter-spacing-1">
+                        <i class="bi bi-grid me-1"></i> Kategori
+                    </label>
+                    <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                        <span class="input-group-text bg-white border-0 ps-3 text-muted"><i class="bi bi-list-task"></i></span>
+                        <select name="category_id" class="form-select border-0 bg-white fs-6 py-3" style="box-shadow: none; cursor: pointer;">
+                            <option value="">Semua</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-success w-100 shadow-sm"><i class="bi bi-arrow-right"></i></button>
+                {{-- 3. Input Lokasi --}}
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-success small text-uppercase letter-spacing-1">
+                        <i class="bi bi-geo-alt me-1"></i> Lokasi
+                    </label>
+                    <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                        <span class="input-group-text bg-white border-0 ps-3 text-danger"><i class="bi bi-geo-alt-fill"></i></span>
+                        <input type="text" name="location" class="form-control border-0 bg-white fs-6 py-3" 
+                               placeholder="Jakarta..." 
+                               value="{{ request('location') }}"
+                               style="box-shadow: none;">
+                    </div>
+                </div>
+
+                {{-- 4. Tombol Submit --}}
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success btn-lg w-100 shadow-md rounded-3 py-3" data-bs-toggle="tooltip" title="Cari Makanan">
+                        <i class="bi bi-search"></i>
+                    </button>
                 </div>
             </div>
+            
+            {{-- Optional: Quick Filter Tags (Badge) di bawah form --}}
+            <div class="mt-3 d-flex gap-2 align-items-center overflow-auto pb-2" style="scrollbar-width: none;">
+                <span class="small text-muted fw-semibold me-1 text-nowrap">Populer:</span>
+                <a href="{{ route('receiver.dashboard', ['search' => 'Nasi']) }}" class="badge bg-white text-secondary border shadow-sm text-decoration-none rounded-pill px-3 py-2 fw-normal hover-bg-success hover-text-white transition-all">
+                    🍚 Nasi
+                </a>
+                <a href="{{ route('receiver.dashboard', ['search' => 'Roti']) }}" class="badge bg-white text-secondary border shadow-sm text-decoration-none rounded-pill px-3 py-2 fw-normal hover-bg-success hover-text-white transition-all">
+                    🍞 Roti
+                </a>
+                <a href="{{ route('receiver.dashboard', ['search' => 'Sayur']) }}" class="badge bg-white text-secondary border shadow-sm text-decoration-none rounded-pill px-3 py-2 fw-normal hover-bg-success hover-text-white transition-all">
+                    🥦 Sayur
+                </a>
+                @if(request()->hasAny(['search', 'category_id', 'location']))
+                    <a href="{{ route('receiver.dashboard') }}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 text-decoration-none rounded-pill px-3 py-2 fw-bold ms-auto">
+                        <i class="bi bi-x-circle me-1"></i> Reset Filter
+                    </a>
+                @endif
+            </div>
+
         </form>
     </div>
 </div>
+
+<style>
+    /* Tambahan CSS kecil untuk efek hover badge */
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .hover-bg-success:hover { background-color: #198754 !important; color: white !important; border-color: #198754 !important; }
+    .letter-spacing-1 { letter-spacing: 0.5px; }
+</style>
 
 {{-- FOOD GRID --}}
 <div class="row g-4">
