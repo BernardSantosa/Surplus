@@ -16,7 +16,7 @@
                 {{-- Hero Image --}}
                 <div class="position-relative bg-light">
                     @if($foodItem->photo)
-                        <img src="{{ asset($foodItem->photo) }}" 
+                        <img src="{{ asset($foodItem->photo_url) }}" 
                              class="w-100" 
                              style="height: 400px; object-fit: cover;" 
                              alt="{{ $foodItem->name }}"
@@ -45,38 +45,70 @@
                     
                     {{-- Info Cards Grid (Updated to 4 items) --}}
                     <div class="row g-3 mb-4">
+                        
+                        {{-- === ROW 1 === --}}
+
                         {{-- 1. STOK --}}
-                        <div class="col-6 col-md-3">
-                            <div class="p-3 bg-light rounded-3 h-100 border border-light">
-                                <small class="text-success fw-bold text-uppercase" style="font-size: 0.7rem;">Stok</small>
-                                <div class="fs-5 fw-bold text-dark">{{ $foodItem->quantity }} <span class="fs-6 text-muted fw-normal">Porsi</span></div>
+                        <div class="col-4 col-md-4">
+                            <div class="p-3 rounded-4 h-100 border border-success border-opacity-25 bg-success bg-opacity-10 position-relative overflow-hidden">
+                                <i class="bi bi-box-seam position-absolute top-0 end-0 display-4 text-success opacity-25" style="transform: translate(10%, -10%);"></i>
+                                <div class="position-relative z-1">
+                                    <small class="text-success fw-bold text-uppercase d-block mb-1" style="font-size: 0.65rem;">Stok</small>
+                                    <div class="d-flex align-items-baseline">
+                                        <span class="fs-3 fw-bold text-success me-1">{{ $foodItem->quantity }}</span>
+                                        <span class="small text-success fw-semibold">Porsi</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         {{-- 2. KADALUARSA --}}
-                        <div class="col-6 col-md-3">
-                            <div class="p-3 bg-light rounded-3 h-100 border border-light">
-                                <small class="text-danger fw-bold text-uppercase" style="font-size: 0.7rem;">Kadaluarsa</small>
-                                <div class="fs-5 fw-bold text-dark">{{ \Carbon\Carbon::parse($foodItem->expires_at)->format('d M') }}</div>
-                                <small class="text-muted" style="font-size: 0.75rem;">{{ \Carbon\Carbon::parse($foodItem->expires_at)->diffForHumans() }}</small>
+                        <div class="col-4 col-md-4">
+                            <div class="p-3 rounded-4 h-100 border border-danger border-opacity-25 bg-danger bg-opacity-10 position-relative overflow-hidden">
+                                <i class="bi bi-hourglass-split position-absolute top-0 end-0 display-4 text-danger opacity-25" style="transform: translate(10%, -10%);"></i>
+                                <div class="position-relative z-1">
+                                    <small class="text-danger fw-bold text-uppercase d-block mb-1" style="font-size: 0.65rem;">Expired</small>
+                                    <div class="fs-6 fw-bold text-danger lh-1 mb-2">
+                                        {{ \Carbon\Carbon::parse($foodItem->expires_at)->format('d M') }}
+                                    </div>
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 rounded-pill" style="font-size: 0.6rem;">
+                                        {{ \Carbon\Carbon::parse($foodItem->expires_at)->diffForHumans() }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- 3. WAKTU PICKUP (NEW) --}}
-                        <div class="col-6 col-md-3">
-                            <div class="p-3 bg-light rounded-3 h-100 border border-light">
-                                <small class="text-warning fw-bold text-uppercase" style="font-size: 0.7rem;">Waktu Pickup</small>
-                                <div class="fw-bold text-dark"><i class="bi bi-clock me-1"></i>{{ $foodItem->pickup_time ?? '-' }}</div>
+                        {{-- 3. WAKTU PICKUP --}}
+                        <div class="col-4 col-md-4">
+                            <div class="p-3 rounded-4 h-100 border border-warning border-opacity-50 bg-warning bg-opacity-10 position-relative overflow-hidden">
+                                <i class="bi bi-alarm position-absolute top-0 end-0 display-4 text-warning opacity-25" style="transform: translate(10%, -10%);"></i>
+                                <div class="position-relative z-1">
+                                    <small class="text-warning text-opacity-75 fw-bold text-uppercase d-block mb-1" style="font-size: 0.65rem;">Pickup</small>
+                                    <div class="fs-6 fw-bold text-dark lh-sm">
+                                        {{ $foodItem->pickup_time ?? '-' }} <span class="small text-muted fw-normal">WIB</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- 4. LOKASI --}}
-                        <div class="col-6 col-md-3">
-                            <div class="p-3 bg-light rounded-3 h-100 border border-light">
-                                <small class="text-primary fw-bold text-uppercase" style="font-size: 0.7rem;">Lokasi</small>
-                                <div class="fw-bold text-dark small text-truncate"><i class="bi bi-geo-alt-fill me-1"></i>{{ $foodItem->pickup_location }}</div>
+                        {{-- === ROW 2 === --}}
+
+                        {{-- 4. LOKASI (Full Width) --}}
+                        <div class="col-12">
+                            <div class="p-3 rounded-4 h-100 border border-primary border-opacity-25 bg-primary bg-opacity-10 position-relative overflow-hidden">
+                                <i class="bi bi-geo-alt position-absolute top-0 end-0 display-4 text-primary opacity-25" style="transform: translate(10%, -10%);"></i>
+                                <div class="position-relative z-1">
+                                    <small class="text-primary fw-bold text-uppercase d-block mb-1" style="font-size: 0.65rem;">Lokasi Pengambilan</small>
+                                    <div class="fw-bold text-dark mb-2 small lh-sm">
+                                        {{ $foodItem->pickup_location }}
+                                    </div>
+                                    <a href="https://maps.google.com/?q={{ urlencode($foodItem->pickup_location) }}" target="_blank" class="text-decoration-none text-primary fw-bold" style="font-size: 0.7rem;">
+                                        <i class="bi bi-map-fill me-1"></i>Buka Peta
+                                    </a>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
                     <div class="mb-5">

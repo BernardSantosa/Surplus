@@ -70,7 +70,7 @@
             {{-- Image Handling --}}
             <div class="position-relative">
                 @if($food->photo)
-                    <img src="{{ asset($food->photo) }}" class="card-img-top" alt="{{ $food->name }}" 
+                    <img src="{{ asset($food->photo_url) }}" class="card-img-top" alt="{{ $food->name }}" 
                          style="height: 200px; object-fit: cover;">
                 @else
                     <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted" 

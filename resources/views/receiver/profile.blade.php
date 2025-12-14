@@ -29,7 +29,7 @@
 
                     <h4 class="fw-bold text-dark mb-1">{{ $user->name }}</h4>
                     <span class="badge bg-light text-success border border-success mb-4 px-3 rounded-pill">
-                        Penerima (Receiver)
+                        Penerima Terverifikasi
                     </span>
 
                     <div class="text-start bg-light rounded-4 p-3 mb-4">
@@ -150,7 +150,7 @@
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center gap-3">
                                             @if($claim->fooditems && $claim->fooditems->photo)
-                                                <img src="{{ asset($claim->fooditems->photo) }}" 
+                                                <img src="{{ asset($claim->fooditems->photo_url) }}" 
                                                      class="rounded shadow-sm object-fit-cover" width="40" height="40">
                                             @else
                                                 <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border" 

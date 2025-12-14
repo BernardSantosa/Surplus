@@ -93,22 +93,22 @@
                         @elseif(auth()->user()->role === 'receiver')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('receiver.dashboard') }}">
-                                Dashboard
+                                Home
                             </a>
                         </li>
                         @endif
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('how') ? 'fw-bold text-white' : '' }}"
                             href="{{ route('how') }}">
                             How It Works
                             </a>
-                        </li>
-                        <li class="nav-item">
+                        </li> --}}
+                        {{-- <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('about') ? 'fw-bold text-white' : '' }}"
                             href="{{ route('about') }}">
                             About Us
                             </a>
-                        </li>
+                        </li> --}}
                         <!-- 55555 -->
                         {{-- Extra Donor-only Links --}}
                         @if(auth()->user()->role === 'receiver')

@@ -32,10 +32,10 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
-                        <tr class="text-uppercase small text-secondary">
+                        <tr class="text-secondary">
                             <th class="ps-4 py-3">Makanan</th>
                             <th class="py-3">Donor</th>
-                            <th class="py-3">Tanggal Request</th>
+                            <th class="py-3">Waktu Request</th>
                             <th class="py-3">Status</th>
                             <th class="text-end pe-4 py-3">Aksi</th>
                         </tr>
@@ -46,21 +46,21 @@
                             <td class="ps-4">
                                 <div class="d-flex align-items-center gap-3">
                                     @if($claim->fooditems && $claim->fooditems->photo)
-                                        <img src="{{ asset($claim->fooditems->photo) }}" 
+                                        <img src="{{ asset($claim->fooditems->photo_url) }}" 
                                              class="rounded-3 shadow-sm object-fit-cover" width="50" height="50">
                                     @else
                                         <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-muted border" 
                                              style="width:50px; height:50px;"><i class="bi bi-egg-fried"></i></div>
                                     @endif
                                     <div>
-                                        <div class="fw-bold text-dark">{{ $claim->fooditems->name ?? 'Item Dihapus' }}</div>
+                                        <div class="text-dark">{{ $claim->fooditems->name ?? 'Item Dihapus' }}</div>
                                         <small class="text-muted">{{ $claim->quantity }} Porsi</small>
                                     </div>
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center text-secondary">
-                                    <i class="bi bi-person-circle me-2"></i>
+                                    <i class="bi bi-person-circle fs-3 me-2"></i>
                                     {{ $claim->fooditems->users->name ?? 'Unknown' }}
                                 </div>
                             </td>
