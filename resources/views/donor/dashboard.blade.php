@@ -7,7 +7,33 @@
         background-color: #198754 !important;
     }
     .nav-pills .nav-link {
-        color: #198754;
+        color: #198754 !important;
+    }
+    .nav-tabs .nav-link {
+        color: #6c757d !important;
+        border: none !important;
+        border-bottom: 3px solid transparent !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 600;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #198754 !important;
+        border-bottom-color: #198754 !important;
+        background-color: transparent !important;
+    }
+
+    .nav-pills .nav-link {
+        color: #6c757d !important;
+        background-color: transparent !important;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #198754 !important;
+        color: white !important;
     }
 </style>
 
