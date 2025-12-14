@@ -57,7 +57,6 @@ class UserSeeder extends Seeder
         
         $faker = Faker::create();
 
-        // ---- Random Donors ----
         for ($i = 1; $i <= 3; $i++) {
             DB::table('users')->insert([
                 'name' => $faker->name(),
@@ -70,7 +69,6 @@ class UserSeeder extends Seeder
             ]);
         }
 
-        // ---- Random Receivers ----
         for ($i = 1; $i <= 3; $i++) {
             DB::table('users')->insert([
                 'name' => $faker->name(),

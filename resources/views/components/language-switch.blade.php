@@ -16,7 +16,6 @@
 </div>
 
 <style>
-    /* -- CSS Label Teks -- */
     .lang-label {
         font-weight: 800;
         font-size: 0.9rem;
@@ -24,26 +23,23 @@
         cursor: pointer;
     }
 
-    /* Kalau Aktif: Warna Hijau & Jelas */
     .label-active {
         color: #ffffffff; 
         opacity: 1;
-        transform: scale(1.1); /* Sedikit membesar biar keren */
+        transform: scale(1.1);
     }
 
-    /* Kalau Tidak Aktif: Warna Abu & Samar */
     .label-inactive {
         color: #198754;
-        opacity: 0.5; /* Transparan biar gak ganggu mata */
+        opacity: 0.5;
     }
 
-    /* -- CSS Switch Neumorphism -- */
     .neu-switch {
         position: relative;
         display: inline-block;
         width: 50px;
         height: 28px;
-        margin-bottom: 0; /* Fix kadang ada margin bawaan browser */
+        margin-bottom: 0;
     }
 
     .neu-switch input {
@@ -62,9 +58,8 @@
         background-color: #f0f0f3; 
         transition: .4s;
         border-radius: 34px;
-        /* Shadow Dalam (Cekung) */
         box-shadow: inset 3px 3px 5px #cbced1, 
-                    inset -3px -3px 5px #ffffff;
+                    inset -3px -3px 5px #ffffffff;
     }
 
     .slider:before {
@@ -77,15 +72,13 @@
         background-color: #f0f0f3;
         transition: .4s;
         border-radius: 50%;
-        /* Shadow Luar (Timbul) */
         box-shadow: 2px 2px 4px #cbced1, 
-                    -2px -2px 4px #ffffff;
+                    -2px -2px 4px #ffffffff;
     }
 
     input:checked + .slider:before {
         transform: translateX(22px);
-        background-color: #198754; /* Hijau saat aktif */
-        /* Shadow Dalam untuk efek tombol masuk */
+        background-color: #198754;
         box-shadow: inset 2px 2px 4px #0f5132, 
                     inset -2px -2px 4px #25c97b;
     }
@@ -95,21 +88,17 @@
     document.getElementById('language-toggle').addEventListener('change', function() {
         let targetLang = this.checked ? 'en' : 'id';
         
-        // Panggil Route
         let url = "{{ route('lang.switch', ':lang') }}";
         url = url.replace(':lang', targetLang);
 
         window.location.href = url;
     });
 
-    // Fitur Tambahan: Bisa klik teks "ID" atau "EN" langsung
     document.querySelectorAll('.lang-label').forEach(label => {
         label.addEventListener('click', function() {
-            // Cek teksnya, kalau ID redirect ke ID, kalau EN redirect ke EN
             let text = this.innerText.trim();
             let lang = (text === 'ID') ? 'id' : 'en';
             
-            // Cek biar gak reload kalau klik bahasa yang sedang aktif
             let currentLang = "{{ app()->getLocale() }}";
             if(lang !== currentLang) {
                 let url = "{{ route('lang.switch', ':lang') }}";
