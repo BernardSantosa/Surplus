@@ -8,6 +8,43 @@
         transition: all 0.3s ease;
         box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
     }
+
+    .pagination .page-link {
+        color: #198754; /* Teks Hijau */
+        border: 1px solid #dee2e6;
+        margin: 0 3px;
+        border-radius: 50% !important; /* Bulat */
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #e9f7ef; /* Hijau muda saat hover */
+        color: #157347;
+        border-color: #198754;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #198754 !important; /* Hijau solid saat aktif */
+        border-color: #198754 !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3);
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        opacity: 0.5;
+    }
+
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .hover-bg-success:hover { background-color: #198754 !important; color: white !important; border-color: #198754 !important; }
+    .letter-spacing-1 { letter-spacing: 0.5px; }
 </style>
 
 {{-- HEADER SECTION (MATCHING DONOR STYLE) --}}
