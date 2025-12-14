@@ -27,7 +27,7 @@ class FoodItemSeeder extends Seeder
             "Beef Rendang daging sapi pilihan, dimasak perlahan selama 8 jam hingga bumbu meresap ke serat daging. Sisa stok rumah makan Padang, rasa otentik dan daging sangat empuk. Bisa disimpan di kulkas untuk stok lauk.",
             "Dada ayam bakar bumbu rujak, diolah rendah lemak dan tinggi protein, sangat cocok untuk menu diet sehat. Merupakan sisa meal prep harian yang masih fresh. Cukup panaskan di microwave/teflon.",
             "Fish Fillet ikan dori berbalut tepung roti yang gurih, tekstur masih garing dan daging ikan lembut. Sisa stok restoran seafood, kualitas premium. Enak dimakan dengan saus tartar atau sambal.",
-            "Satu paket apel fuji segar pilihan. Terdapat sedikit memar alami di kulit (imperpect), namun daging buah masih sangat renyah, manis, dan bagus. Sangat layak konsumsi atau cocok dibuat jus sehat.",
+            "Satu set apel fuji segar pilihan. Terdapat sedikit memar alami di kulit (imperpect), namun daging buah masih sangat renyah, manis, dan bagus. Sangat layak konsumsi atau cocok dibuat jus sehat.",
             "Pisang cavendish satu sisir utuh, tingkat kematangan pas dan warna kuning cerah. Tekstur daging buah lembut dan manis, cocok untuk langsung dimakan sebagai sumber energi instan atau bahan smoothie.",
             "Salad buah segar potongan besar dengan dressing mayo keju yang melimpah. Sisa stok toko buah potong hari ini, vitamin terjaga. Segera simpan di kulkas dan nikmati dalam kondisi dingin.",
             "Bowl salad sayur mix (selada, tomat cherry, timun jepang) yang renyah. Dilengkapi dressing wijen sangrai gurih. Sayuran masih segar dan 'kriuk', sisa stok display yang belum tersentuh.",
